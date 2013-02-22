@@ -3,6 +3,7 @@ require_relative 'sms'
 
 module Biju
   class Modem
+    attr_reader :connection
 
     # @param [Hash] Options to serial connection.
     # @option options [String] :port The modem port to connect
@@ -11,23 +12,30 @@ module Biju
     #
     def initialize(options={}, &block)
       raise Exception.new("Port is required") unless options[:port]
-      pin = options.delete(:pin)
-      @connection = connection(options)
+      pin = options[:pin] || '0000'
+      @connection = connect(options)
       cmd("AT")
       # initialize modem
       cmd("ATZ")
       # unlock pin code
       cmd("AT+CPIN=\"#{pin}\"") if pin
+
+      cmd("AT+CPMS=?")
+
       # set SMS text mode
       cmd("AT+CMGF=1")
       # set extended error reports
       cmd('AT+CMEE=1')
       #instance_eval &block if block_given?
+      if block_given?
+        yield connection
+        close
+      end
     end
 
     # Close the serial connection.
     def close
-      @connection.close
+      connection.close
     end
 
     # Return an Array of Sms if there is messages nad return nil if not.
@@ -60,7 +68,7 @@ module Biju
     end
 
     private
-    def connection(options)
+    def connect(options)
       port = options.delete(:port)
       SerialPort.new(port, default_options.merge!(options))
     end
@@ -70,17 +78,19 @@ module Biju
     end
 
     def cmd(cmd)
-      @connection.write(cmd + "\r")
+puts "SENDING : #{cmd}"
+      connection.write(cmd + "\r")
       wait_str = wait
       #p "#{cmd} --> #{wait_str}"
     end
 
     def wait
       buffer = ''
-      while IO.select([@connection], [], [], 0.25)
-        chr = @connection.getc.chr;
+      while IO.select([connection], [], [], 0.25)
+        chr = connection.getc.chr;
         buffer += chr
       end
+puts "RECEIVING : #{buffer}"
       buffer
     end
   end

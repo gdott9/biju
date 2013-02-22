@@ -17,5 +17,5 @@ Gem::Specification.new do |gem|
 
   gem.add_development_dependency "minitest",    "3.0.0"
 
-  gem.add_dependency "serialport",              "1.0.4"
+  gem.add_dependency "serialport",              ">=1.0.4"
 end
