@@ -6,7 +6,7 @@ $: << 'lib'
 require 'biju'
 require 'pp'
 
-str = 'www.ruby-lang.org and bonjour www.rubygarden.org coucou'
+#str = 'www.ruby-lang.org and bonjour www.rubygarden.org coucou'
 #re = /
 #      (               # capture the hostname in $1
 #        (?:           # these parens for grouping only
@@ -18,23 +18,29 @@ str = 'www.ruby-lang.org and bonjour www.rubygarden.org coucou'
 #        [\w-] +       # now trailing domain part
 #      )               # end of $1 capture
 #     /x               # /x for nice formatting
-re = /
-      (               # capture the hostname in $1
-        (?:           # these parens for grouping only
-          (?! [-_] )  # lookahead for neither underscore nor dash
-          [\w-] +     # hostname component
-          \.          # and the domain dot
-        ) +           # now repeat that whole thing a bunch of times
-        [A-Za-z]      # next must be a letter
-        [\w-] +       # now trailing domain part
-      )               # end of $1 capture
-     /x               # /x for nice formatting
+#str = '((www.ruby-lang.org), (www.rubygarden.org), (www.co.com) ucou)'
+strs = []
+strs << '((www.ruby-lang.org), (www.rubygarden.org), (www.co.com) (u)cou)'
+strs << '(www.ruby-lang.org), (www.rubygarden.org), (www.co.com) (u)'
 
-str.gsub! re do      # pass a block to execute replacement
-  pp $1
+re =  /
+        \(             # parenthese
+          (
+            #[^\(\)]*?
+            [\(\)]*?
+            .*?
+          )
+        \)             # parenthese
+      /x
+
+strs.each do |str|
+  pp "STR : #{str}"
+  str.gsub! re do      # pass a block to execute replacement
+    pp $1
+  end
 end
 
-#exit
+exit
 
 puts "here"
 hayes = Biju::HayesSms.new
