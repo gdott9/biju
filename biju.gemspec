@@ -15,8 +15,8 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Biju::VERSION
 
-  gem.add_development_dependency "minitest",    "3.0.0"
+  gem.add_development_dependency "rspec", "~> 2.14.0"
 
-  gem.add_dependency "serialport",              ">=1.0.4"
+  gem.add_dependency "serialport", "~> 1.1.0"
   gem.add_dependency "parslet", "~> 1.5.0"
 end

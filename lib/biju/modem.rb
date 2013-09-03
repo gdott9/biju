@@ -1,36 +1,19 @@
 require 'serialport'
-require_relative 'sms'
 
 module Biju
   class Modem
+    DEFAULT_OPTIONS = { baud: 9600, data_bits: 8,
+                        stop_bits: 1, parity: SerialPort::NONE }
+
     attr_reader :connection
 
     # @param [Hash] Options to serial connection.
     # @option options [String] :port The modem port to connect
     #
-    #   Biju::Modem.new(:port => '/dev/ttyUSB0')
+    #   Biju::Modem.new('/dev/ttyUSB0')
     #
-    def initialize(options={}, &block)
-      raise Exception.new("Port is required") unless options[:port]
-      pin = options[:pin] || '0000'
-      @connection = connect(options)
-      cmd("AT")
-      # initialize modem
-      cmd("ATZ")
-      # unlock pin code
-      cmd("AT+CPIN=\"#{pin}\"") if pin
-
-      cmd("AT+CPMS=?")
-
-      # set SMS text mode
-      cmd("AT+CMGF=1")
-      # set extended error reports
-      cmd('AT+CMEE=1')
-      #instance_eval &block if block_given?
-      if block_given?
-        yield connection
-        close
-      end
+    def initialize(port, options = {})
+      @connection = SerialPort.new(port, DEFAULT_OPTIONS.merge!(options))
     end
 
     # Close the serial connection.
@@ -38,59 +21,16 @@ module Biju
       connection.close
     end
 
-    # Return an Array of Sms if there is messages nad return nil if not.
-    def messages(which = "ALL")
-      # read message from all storage in the mobile phone (sim+mem)
-      cmd('AT+CPMS="MT"')
-      # get message list
-      sms = cmd('AT+CMGL="%s"' % which )
-      # collect messages
-      msgs = sms.scan(/\+CMGL\:\s*?(\d+)\,.*?\,\"(.+?)\"\,.*?\,\"(.+?)\".*?\n(.*)/)
-      return nil unless msgs
-      msgs.collect!{ |msg| Biju::Sms.new(:id => msg[0], :phone_number => msg[1], :datetime => msg[2], :message => msg[3].chomp) }
+    def write(text)
+      connection.write(text + "\r")
     end
 
-    # Delete a sms message by id.
-    # @param [Fixnum] Id of sms message on modem.
-    def delete(id)
-      cmd("AT+CMGD=#{id}")
-    end
-
-    def send(sms, options = {})
-      # initiate the sms, and wait for either
-      # the text prompt or an error message
-      cmd("AT+CMGS=\"#{sms.phone_number}\"")
-
-      # send the sms, and wait until
-      # it is accepted or rejected
-      cmd("#{sms.message}#{26.chr}")
-      # ... check reception
-    end
-
-    private
-    def connect(options)
-      port = options.delete(:port)
-      SerialPort.new(port, default_options.merge!(options))
-    end
-
-    def default_options
-      { :baud => 9600, :data_bits => 8, :stop_bits => 1, :parity => SerialPort::NONE }
-    end
-
-    def cmd(cmd)
-puts "SENDING : #{cmd}"
-      connection.write(cmd + "\r")
-      wait_str = wait
-      #p "#{cmd} --> #{wait_str}"
-    end
-
-    def wait
+    def wait_answer
       buffer = ''
       while IO.select([connection], [], [], 0.25)
-        chr = connection.getc.chr;
-        buffer += chr
+        buffer << connection.getc.chr
       end
-puts "RECEIVING : #{buffer}"
+
       buffer
     end
   end

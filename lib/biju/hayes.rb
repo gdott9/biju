@@ -1,69 +1,92 @@
 module Biju
   class Hayes
-    attr_accessor :command, :attributes, :ok
-    attr_reader :answer
+    attr_reader :modem
 
-    #def method_missing(m, *args, &block)
-    #end
+    def initialize(port, options = {})
+      pin = options.delete(:pin) || '0000'
+      @modem = Modem.new(port, options)
+
+      attention
+      init_modem
+      unlock_pin pin
+
+      text_mode
+      extended_error
+    end
+
+    def at_command(cmd = nil, *args, &block)
+      command = ['AT', cmd].compact.join
+      command_args = args.compact.to_hayes
+
+      full_command = [command, (command_args.empty? ? nil : command_args)]
+        .compact.join('=')
+
+      answer = write(full_command)
+
+      return block.call(answer) if block_given?
+      answer
+    end
 
     def attention
-      at_command { |response| response =~ /OK/ }
-      #at_command { |response| true }
+      at_command[:status]
     end
 
     def init_modem
-      at_command('Z') { |response| response =~ /OK/ }
+      at_command('Z')[:status]
     end
 
     def text_mode(enabled = true)
-      at_command('+CMGF', enabled) { |response| response =~ /OK/ }
+      at_command('+CMGF', enabled)[:status]
     end
 
-    def prefered_storage?
-      at_command('+CPMS') { |response| response =~ /OK/ }
+    def extended_error(enabled = true)
+      at_command('+CMEE', enabled)[:status]
     end
 
-    def answer=(ret)
-      @answer = ret
-      ok?
+    def prefered_storage(pms = nil)
+      result = at_command('+CPMS', pms)
+      return result[:array] if result[:cmd] == '+CPMS'
+      nil
     end
 
-    def ok?
-      ok.nil? ? true : !ok.call(answer).nil?
+    def unlock_pin(pin)
+      at_command('+CPIN', pin)[:status]
+    end
+
+    def messages(which = "ALL")
+      prefered_storage 'MT'
+      sms = at_command('+CMGL', which)
+
+      return sms[:status] if !sms.has_key?(:sms) || sms[:sms].empty?
+      sms[:sms].map do |msg|
+        Biju::Sms.new(
+          id: msg[:infos][0],
+          phone_number: msg[:infos][2],
+          datetime: msg[:infos][4],
+          message: msg[:message].chomp)
+      end
+    end
+
+    # Delete a sms message by id.
+    # @param [Fixnum] Id of sms message on modem.
+    def delete(id)
+      at_command('+CMGD', id)
+    end
+
+    def send(sms, options = {})
+      at_command('+CMGS', sms.phone_number)
+      write("#{sms.message}#{26.chr}")
     end
 
     private
 
-    def at_command(cmd = nil, *args, &block)
-      option_prefix = nil #options[:prefix] || nil
-      cmd_root = ['AT', cmd].compact.join(option_prefix)
-      cmd_args = args.compact.map { |arg| to_hayes_string(arg) } unless args.empty?
-      self.command = [cmd_root, cmd_args].compact.join('=')
-      self.ok = block if block_given?
-      command
+    def write(text)
+      modem.write(text)
+      hayes_to_obj(modem.wait_answer)
     end
 
     def hayes_to_obj(str)
-    end
-
-    # OPTIMIZE : add () to array
-    def to_hayes_string(arg)
-      case arg
-      when String
-        "\"#{arg}\""
-      when Array
-        arg.join(',')
-      when TrueClass, FalseClass
-        !!arg ? 1 : 0
-      else
-        "?"
-      end
-    end
-  end
-
-  class HayesSms < Hayes
-    def unlock_pin(pin)
-      at_command("+CPIN=#{to_hayes_string(pin)}") { |response| response =~ /OK/ }
+      ATTransform.new.apply(ATParser.new.parse(str))
     end
   end
 end

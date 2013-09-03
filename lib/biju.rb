@@ -1,4 +1,6 @@
 require 'biju/version'
-require "biju/modem"
-require "biju/sms"
-require "biju/hayes"
+require 'biju/modem'
+require 'biju/to_hayes'
+require 'biju/hayes'
+require 'biju/sms'
+require 'biju/parser'
