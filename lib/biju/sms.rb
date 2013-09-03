@@ -1,6 +1,9 @@
+require 'date'
+
 module Biju
   class Sms
-    attr_accessor :id, :phone_number, :datetime, :message
+    attr_accessor :id, :phone_number, :message
+    attr_reader :datetime
 
     def initialize(params={})
       params.each do |attr, value|
@@ -8,8 +11,15 @@ module Biju
       end if params
     end
 
-    def datetime
-      @datetime.sub(/(\d+)\D+(\d+)\D+(\d+),(\d*\D)(\d*\D)(\d+)(.*)/, '20\1-\2-\3 \4\5\6')
+    def datetime=(arg)
+      @datetime = case arg
+      when String
+        DateTime.strptime(arg, "%y/%m/%d,%T")
+      when DateTime
+        arg
+      else
+        nil
+      end
     end
 
     def to_s
