@@ -31,17 +31,18 @@ module Biju
         user_data_length: string[52..53],
       }
       res[:sender_number] = string[22..(22 + res[:address_length])]
-      res[:user_data] = PDU.decode_user_data(
-        string[54..-1], res[:data_coding_scheme])
+      res[:user_data] = PDU.decode_user_data(string[54..-1],
+        encoding: res[:data_coding_scheme],
+        length: res[:user_data_length].hex)
 
       res
     end
 
-    def self.decode_user_data(message, encoding = '00')
+    def self.decode_user_data(message, encoding: '00', length: 0)
       encoding = data_coding_scheme(encoding) unless encoding.is_a?(Symbol)
 
       raise ArgumentError, "Unknown encoding" unless ENCODING.has_key?(:gsm7bit)
-      ENCODING[:gsm7bit].decode(message)
+      ENCODING[:gsm7bit].decode(message, length: length)
     end
 
     def self.data_coding_scheme(dcs)
