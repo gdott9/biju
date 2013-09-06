@@ -1,9 +1,9 @@
 class Object
-  def to_hayes; "\"#{self.to_s}\""; end
+  def to_hayes; "\"#{to_s}\""; end
 end
 
 class Fixnum
-  def to_hayes; self.to_s; end
+  def to_hayes; to_s; end
 end
 
 class TrueClass
@@ -15,5 +15,5 @@ class FalseClass
 end
 
 class Array
-  def to_hayes; self.map(&:to_hayes).join(','); end
+  def to_hayes; map(&:to_hayes).join(','); end
 end
