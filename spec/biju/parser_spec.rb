@@ -4,39 +4,36 @@ require 'biju/parser'
 describe Biju::ATParser do
   context "status" do
     it "returns ok status" do
-      result = Biju::ATTransform.new.apply(Biju::ATParser.new.parse("OK\r"))
+      result = Biju::ATTransform.new.apply(Biju::ATParser.new.parse("OK\r\n"))
       expect(result).to include(status: true)
     end
 
     it "returns error status" do
-      result = Biju::ATTransform.new.apply(Biju::ATParser.new.parse("ERROR\r"))
+      result = Biju::ATTransform.new.apply(Biju::ATParser.new.parse("ERROR\r\n"))
       expect(result).to include(status: false)
     end
   end
 
   context "response" do
     it "parses messages list" do
-      messages = '+CMGL: 1,"REC READ","+85291234567",,"07/02/18,01:12:12+32"' <<
-                  "\r" <<
-                  "Reading text messages is easy.\r" <<
-                  '+CMGL: 2,"REC READ","+85291234567",,"07/02/18,00:07:22+32"' <<
-                  "\r" <<
-                  "A simple demo of SMS text messaging.\r" <<
-                  '+CMGL: 3,"REC READ","+85291234567",,"07/02/18,00:12:05+32"' <<
-                  "\r" <<
-                  "Hello, welcome to our SMS tutorial.\r" <<
-                  "\r" <<
-                  "OK\r"
+      messages = "+CMGL: 0,1,,23\r\n" <<
+                  "07913396050066F3040B91336789\r\n" <<
+                  "+CMGL: 3,1,,74\r\n" <<
+                  "BD60B917ACC68AC17431982E066BC5642205F3C95400\r\n" <<
+                  "+CMGL: 4,1,,20\r\n" <<
+                  "07913396050066F3040B913364446864\r\n" <<
+                  "\r\n" <<
+                  "OK\r\n"
       result = Biju::ATTransform.new.apply(
         Biju::ATParser.new.parse(messages))
 
       expect(result).to include(status: true)
       expect(result[:sms]).to have(3).messages
-      expect(result[:sms][0][:message]).to eq('Reading text messages is easy.')
+      expect(result[:sms][0][:message]).to eq('07913396050066F3040B91336789')
     end
 
     it "gets messages storage" do
-      pms = "+CPMS: ((\"SM\",\"BM\",\"SR\"),(\"SM\"))\r"
+      pms = "+CPMS: ((\"SM\",\"BM\",\"SR\"),(\"SM\"))\r\n"
 
       result = Biju::ATTransform.new.apply(
         Biju::ATParser.new.parse(pms))

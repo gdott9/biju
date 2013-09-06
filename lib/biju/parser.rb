@@ -8,7 +8,7 @@ module Biju
     rule(:at_string) { request | response }
 
     # REQUEST
-    rule(:request) { str('+++') | str('A/') | (prefix >> match('[^\r]').repeat) }
+    rule(:request) { str('+++') | str('A/') | (prefix >> (crlf.absent? >> any).repeat) }
     rule(:prefix) { str('AT') | str('at') }
 
     # RESPONSE
@@ -17,7 +17,7 @@ module Biju
 
     rule(:mserror) { str('+CMS ERROR').as(:cmd) >> str(': ') >> message }
     rule(:mgl) do
-      (str('+CMGL').as(:cmd) >> str(': ') >> infos >> crlf >> message).repeat.as(:sms) >>
+      (str('+CMGL').as(:cmd) >> str(': ') >> infos >> crlf >> message >> crlf).repeat.as(:sms) >>
       crlf >> status
     end
     rule(:pms) do
@@ -30,14 +30,16 @@ module Biju
     rule(:data) { (str('(') >> array >> str(')')) | info }
     rule(:infos) { (info >> (comma >> info).repeat).as(:infos) }
     rule(:info) { datetime | string | int | empty_string }
-    rule(:message) { match('[^\r]').repeat.as(:message) >> crlf }
+    rule(:message) { match('[0-9A-Fa-f]').repeat.as(:message) }
 
     # MISC
     rule(:status) { (ok | error).as(:status) }
     rule(:ok) { str('OK').as(:ok) }
     rule(:error) { str('ERROR').as(:error) }
 
-    rule(:crlf) { str("\r") }
+    rule(:cr) { str("\r") }
+    rule(:lf) { str("\n") }
+    rule(:crlf) { cr >> lf }
     rule(:comma) { str(',') }
     rule(:quote) { str('"') }
 
@@ -51,7 +53,7 @@ module Biju
     end
     rule(:time) do
       (match('[0-9]').repeat(2) >> str(':')).repeat(2) >> match('[0-9]').repeat(2) >>
-      str('+') >> match('[0-9]').repeat(2)
+      match('[-+]') >> match('[0-9]').repeat(2)
     end
   end
 
