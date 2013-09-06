@@ -12,6 +12,6 @@ describe Biju::Sms do
 
   its(:id) { should eq(1) }
   its(:phone_number) { should eq("144") }
-  its(:datetime) { should eq(DateTime.new(2011, 7, 28, 15, 34, 8)) }
+  its(:datetime) { should eq(DateTime.new(2011, 7, 28, 15, 34, 8, '-12')) }
   its(:message) { should eq("Some text here") }
 end

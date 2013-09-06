@@ -66,7 +66,7 @@ module Biju
     rule(empty_string: simple(:empty_string)) { '' }
     rule(int: simple(:int)) { int.to_i }
     rule(string: simple(:string)) { string.to_s }
-    rule(datetime: simple(:datetime)) { DateTime.strptime(datetime.to_s, "%y/%m/%d,%T") }
+    rule(datetime: simple(:datetime)) { DateTime.strptime(datetime.to_s, "%y/%m/%d,%T%Z") }
     rule(array: subtree(:array)) { array }
 
     rule(status: simple(:status)) { { status: status } }

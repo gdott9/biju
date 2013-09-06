@@ -21,7 +21,7 @@ module Biju
     def datetime=(arg)
       @datetime = case arg
       when String
-        DateTime.strptime(arg, "%y/%m/%d,%T")
+        DateTime.strptime(arg, "%y/%m/%d,%T%Z")
       when DateTime
         arg
       else
