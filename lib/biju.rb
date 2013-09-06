@@ -1,5 +1,6 @@
 require 'biju/version'
 require 'biju/modem'
+require 'biju/pdu'
 require 'biju/to_hayes'
 require 'biju/hayes'
 require 'biju/sms'
