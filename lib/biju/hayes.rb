@@ -21,7 +21,8 @@ module Biju
       full_command = [command, (command_args.empty? ? nil : command_args)]
         .compact.join('=')
 
-      answer = write(full_command)
+      modem.write(full_command + "\r\n")
+      answer = hayes_to_obj(modem.wait)
 
       return block.call(answer) if block_given?
       answer
@@ -75,15 +76,12 @@ module Biju
 
     def send(sms, options = {})
       at_command('+CMGS', sms.phone_number)
+
       write("#{sms.message}#{26.chr}")
+      hayes_to_obj(modem.wait)
     end
 
     private
-
-    def write(text)
-      modem.write(text)
-      hayes_to_obj(modem.wait_answer)
-    end
 
     def hayes_to_obj(str)
       ATTransform.new.apply(ATParser.new.parse(str))

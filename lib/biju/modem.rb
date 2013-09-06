@@ -1,7 +1,10 @@
 require 'serialport'
+require 'forwardable'
 
 module Biju
   class Modem
+    extend Forwardable
+
     DEFAULT_OPTIONS = { baud: 9600, data_bits: 8,
                         stop_bits: 1, parity: SerialPort::NONE }
 
@@ -16,16 +19,9 @@ module Biju
       @connection = SerialPort.new(port, DEFAULT_OPTIONS.merge!(options))
     end
 
-    # Close the serial connection.
-    def close
-      connection.close
-    end
+    def_delegators :connection, :close, :write
 
-    def write(text)
-      connection.write(text + "\r")
-    end
-
-    def wait_answer
+    def wait
       buffer = ''
       while IO.select([connection], [], [], 0.25)
         buffer << connection.getc.chr
