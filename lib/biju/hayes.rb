@@ -40,6 +40,11 @@ module Biju
       at_command('+CMGF', enabled)[:status]
     end
 
+    def text_mode?(force = false)
+      @text_mode = at_command('+CMGF?')[:result] if @text_mode.nil? || force
+      @text_mode
+    end
+
     def extended_error(enabled = true)
       at_command('+CMEE', enabled)[:status]
     end

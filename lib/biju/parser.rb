@@ -13,7 +13,7 @@ module Biju
 
     # RESPONSE
     rule(:response) { cr >> crlf >> (status | command) >> crlf }
-    rule(:command) { mgl | pms | mserror }
+    rule(:command) { mgl | pms | mgf | mserror }
 
     rule(:mserror) { str('+CMS ERROR').as(:cmd) >> str(': ') >> message }
     rule(:mgl) do
@@ -23,6 +23,9 @@ module Biju
     rule(:pms) do
       str('+CPMS').as(:cmd) >> str(': ') >> str('(').maybe >> array >> str(')').maybe >>
       crlf >> crlf >> status
+    end
+    rule(:mgf) do
+      str('+CMGF').as(:cmd) >> str(': ') >> boolean.as(:result) >> crlf >> crlf >> status
     end
 
     rule(:array) do
@@ -47,6 +50,7 @@ module Biju
     rule(:empty_string) { str('').as(:empty_string) }
     rule(:string) { quote >> match('[^\"]').repeat.as(:string) >> quote }
     rule(:int) { match('[0-9]').repeat(1).as(:int) }
+    rule(:boolean) { match('[01]').as(:boolean) }
 
     rule(:datetime) { quote >> (date >> str(',') >> time).as(:datetime) >> quote }
     rule(:date) do
@@ -65,9 +69,13 @@ module Biju
     rule(cmd: simple(:cmd), array: subtree(:array)) do
       {cmd: cmd.to_s, array: array}
     end
+    rule(cmd: simple(:cmd), result: simple(:result)) do
+      {cmd: cmd.to_s, result: result}
+    end
 
     rule(empty_string: simple(:empty_string)) { '' }
     rule(int: simple(:int)) { int.to_i }
+    rule(boolean: simple(:boolean)) { boolean.to_i > 0 }
     rule(string: simple(:string)) { string.to_s }
     rule(datetime: simple(:datetime)) { DateTime.strptime(datetime.to_s, "%y/%m/%d,%T%Z") }
     rule(array: subtree(:array)) { array }
