@@ -5,9 +5,10 @@ module Biju
     attr_accessor :id, :phone_number, :message
     attr_reader :datetime
 
-    def self.from_pdu(string)
+    def self.from_pdu(string, id = nil)
       sms_infos = PDU.decode(string)
-      new(phone_number: sms_infos[:sender_number],
+      new(id: id,
+          phone_number: sms_infos[:sender_number],
           datetime: sms_infos[:timestamp],
           message: sms_infos[:user_data])
     end

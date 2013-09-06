@@ -2,6 +2,14 @@ module Biju
   class Hayes
     attr_reader :modem
 
+    MESSAGE_STATUS = {
+      unread: [0, 'REC UNREAD'],
+      read: [1, 'REC UNREAD'],
+      unsent: [2, ''],
+      sent: [3, ''],
+      all: [4, 'ALL'],
+    }
+
     def initialize(port, options = {})
       pin = options.delete(:pin) || '0000'
       @modem = Modem.new(port, options)
@@ -10,7 +18,7 @@ module Biju
       init_modem
       unlock_pin pin
 
-      text_mode
+      text_mode(false)
       extended_error
     end
 
@@ -59,17 +67,14 @@ module Biju
       at_command('+CPIN', pin)[:status]
     end
 
-    def messages(which = "ALL")
-      prefered_storage 'MT'
+    def messages(which = :all)
+      which = MESSAGE_STATUS[which][text_mode? ? 1 : 0] if which.is_a?(Symbol)
+
       sms = at_command('+CMGL', which)
 
       return sms[:status] if !sms.has_key?(:sms) || sms[:sms].empty?
       sms[:sms].map do |msg|
-        Biju::Sms.new(
-          id: msg[:infos][0],
-          phone_number: msg[:infos][2],
-          datetime: msg[:infos][4],
-          message: msg[:message].chomp)
+        Biju::Sms.from_pdu(msg[:message].chomp, msg[:infos][0])
       end
     end
 
