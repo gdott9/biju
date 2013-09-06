@@ -8,11 +8,11 @@ module Biju
     rule(:at_string) { request | response }
 
     # REQUEST
-    rule(:request) { str('+++') | str('A/') | (prefix >> (crlf.absent? >> any).repeat) }
+    rule(:request) { str('+++') | str('A/') | (prefix >> (cr.absent? >> lf.absent? >> any).repeat(0)) >> response.maybe }
     rule(:prefix) { str('AT') | str('at') }
 
     # RESPONSE
-    rule(:response) { (status | command) >> crlf }
+    rule(:response) { cr >> crlf >> (status | command) >> crlf }
     rule(:command) { mgl | pms | mserror }
 
     rule(:mserror) { str('+CMS ERROR').as(:cmd) >> str(': ') >> message }
@@ -21,7 +21,8 @@ module Biju
       crlf >> status
     end
     rule(:pms) do
-      str('+CPMS').as(:cmd) >> str(': ') >> str('(').maybe >> array >> str(')').maybe
+      str('+CPMS').as(:cmd) >> str(': ') >> str('(').maybe >> array >> str(')').maybe >>
+      crlf >> crlf >> status
     end
 
     rule(:array) do
