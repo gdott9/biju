@@ -1,19 +1,30 @@
 require 'biju/pdu/gsm7bit'
 require 'biju/pdu/ucs2'
 
+require 'biju/pdu/user_data'
+require 'biju/pdu/data_coding_scheme'
+
+require 'biju/pdu/phone_number'
+require 'biju/pdu/type_of_address'
+
 module Biju
   module PDU
-    ENCODING = {
-      gsm7bit: GSM7Bit,
-      ucs2: UCS2,
-    }
+    def self.encode(phone_number, message, type_of_address: :international)
+      phone_number = PhoneNumber.encode(phone_number)
+      user_data = UserData.encode(message)
 
-    def self.encode(hash)
-    end
-
-    def self.encode_user_data(message, encoding = :gsm7bit)
-      raise ArgumentError, "Unknown encoding" unless ENCODING.has_key?(encoding)
-      ENCODING[encoding].encode(message)
+      [
+        '00',
+        '01',
+        '00', # TP-Message-Reference
+        "%02x" % phone_number.length,
+        "%02x" % phone_number.type_of_address.hex,
+        phone_number.number,
+        '00', # TP-PID: Protocol identifier
+        "%02x" % user_data.encoding.hex,
+        "%02x" % user_data.length,
+        user_data.message
+      ].join
     end
 
     def self.decode(string)
@@ -32,36 +43,14 @@ module Biju
           '%S%M%H%d%m%y%Z'),
         user_data_length: string[52..53],
       }
-      res[:sender_number] = string[22..(22 + res[:address_length])].scan(/../)
-        .map(&:reverse).join.chop
-      res[:user_data] = PDU.decode_user_data(string[54..-1],
+      res[:sender_number] = PhoneNumber.new(
+        string[22, res[:address_length] + (res[:address_length].odd? ? 1 : 0)],
+        type_of_address: res[:address_type])
+      res[:user_data] = UserData.new(message: string[54..-1],
         encoding: res[:data_coding_scheme],
         length: res[:user_data_length].hex)
 
       res
-    end
-
-    def self.decode_user_data(message, encoding: '00', length: 0)
-      encoding = data_coding_scheme(encoding) unless encoding.is_a?(Symbol)
-
-      raise ArgumentError, "Unknown encoding" unless ENCODING.has_key?(encoding)
-      ENCODING[encoding].decode(message, length: length)
-    end
-
-    def self.data_coding_scheme(dcs)
-      dcs = dcs.hex if dcs.is_a?(String)
-      if dcs & 0b11000000 == 0
-        case dcs & 0b00001100
-        when 0
-          :gsm7bit
-        when 4
-          :gsm8bit
-        when 8
-          :ucs2
-        when 12
-          :reserved
-        end
-      end
     end
   end
 end
