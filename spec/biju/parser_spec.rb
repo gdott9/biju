@@ -15,6 +15,13 @@ describe Biju::ATParser do
   end
 
   context "response" do
+    it "parses cmgs prompt" do
+      mgs = "AT+CMGS=18\r\r\n> "
+
+      expect { Biju::ATTransform.new.apply(
+        Biju::ATParser.new.parse(mgs)) }.not_to raise_error
+    end
+
     it "parses messages list" do
       messages = "AT+CMGL=1\r\r\n" <<
                   "+CMGL: 0,1,,23\r\n" <<

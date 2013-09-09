@@ -12,7 +12,8 @@ module Biju
     rule(:prefix) { str('AT') | str('at') }
 
     # RESPONSE
-    rule(:response) { cr >> crlf >> (status | command) >> crlf }
+    rule(:response) { cr >> crlf >> (((status | command) >> crlf) | prompt)  }
+    rule(:prompt) { str('> ') }
     rule(:command) { mgl | pms | mgf | mserror }
 
     rule(:mserror) { str('+CMS ERROR').as(:cmd) >> str(': ') >> message }
