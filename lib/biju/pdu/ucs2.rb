@@ -7,7 +7,10 @@ module Biju
       end
 
       def self.encode(string)
-        string.encode('UCS-2BE').chars.map { |char| "%04x" % char.ord }.join
+        [
+          string.encode('UCS-2BE').chars.map { |char| "%04x" % char.ord }.join,
+          length: string.length * 2,
+        ]
       end
     end
   end

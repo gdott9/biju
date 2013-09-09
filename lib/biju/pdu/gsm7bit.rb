@@ -4,12 +4,12 @@ module Biju
       BASIC_7BIT_CHARACTER_SET = [
         '@', '£', '$', '¥', 'è', 'é', 'ù', 'ì', 'ò', 'Ç', "\n", 'Ø', 'ø', "\r", 'Å', 'å',
         "\u0394", '_', "\u03a6", "\u0393", "\u039b", "\u03a9", "\u03a0","\u03a8", "\u03a3", "\u0398", "\u039e", "\e", 'Æ', 'æ', 'ß', 'É',
-        ' ', '!', '"', '#', '¤', '%', '&', '\'', '(', ')','*', '+', ',', '-', '.', '/',
-        '0', '1', '2', '3', '4', '5', '6', '7','8', '9', ':', ';', '<', '=', '>', '?',
-        '¡', 'A', 'B', 'C', 'D', 'E','F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-        'P', 'Q', 'R', 'S','T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Ä', 'Ö', 'Ñ', 'Ü', '§',
-        '¿', 'a','b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'ä', 'ö', 'ñ','ü', 'à'
+        ' ', '!', '"', '#', '¤', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/',
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?',
+        '¡', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+        'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Ä', 'Ö', 'Ñ', 'Ü', '§',
+        '¿', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+        'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'ä', 'ö', 'ñ', 'ü', 'à'
       ]
 
       BASIC_7BIT_CHARACTER_SET_EXTENSION = {
@@ -30,36 +30,48 @@ module Biju
       def self.decode(string, length: 0)
         res = ''
         next_char = 0
+        current_length = 0
 
         string.scan(/../).map(&:hex).each_with_index do |octet, i|
           index = i % 7
           current = ((octet & (2 ** (7 - index) - 1)) << index) | next_char
 
           res = add_char(res, current)
+          current_length += 1
+
+          break if length > 0 && current_length >= length
 
           next_char = octet >> (7 - index)
           if index == 6
             res = add_char(res, next_char)
+            current_length += 1
             next_char = 0
           end
         end
 
-        res[0..(length - 1)]
+        res
       end
 
       def self.encode(string)
         res = ''
+        length = 0
+
         string.chars.each do |char|
           if get_septet(char)
             res << get_septet(char).reverse
+            length += 1
           elsif get_septet(char, escape: true)
             res << get_septet("\e").reverse
             res << get_septet(char, escape: true).reverse
+            length += 2
           end
         end
         res << ("0" * (8 - (res.length % 8))) unless res.length % 8 == 0
 
-        res.scan(/.{8}/).map { |octet| "%02x" % octet.reverse.to_i(2) }.join
+        [
+          res.scan(/.{8}/).map { |octet| "%02x" % octet.reverse.to_i(2) }.join,
+          length: length,
+        ]
       end
 
       private

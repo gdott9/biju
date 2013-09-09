@@ -10,7 +10,7 @@ describe Biju::PDU::UCS2 do
 
   describe '::encode' do
     it "encodes string" do
-      expect(Biju::PDU::UCS2.encode('Ççâãåäūøœ').upcase).to eq('00C700E700E200E300E500E4016B00F80153')
+      expect(Biju::PDU::UCS2.encode('Ççâãåäūøœ').first.upcase).to eq('00C700E700E200E300E500E4016B00F80153')
     end
   end
 
@@ -24,7 +24,7 @@ describe Biju::PDU::UCS2 do
 
     strings.each do |string|
       expect(Biju::PDU::UCS2.decode(
-        Biju::PDU::UCS2.encode(string), length: string.length)).to eq(string)
+        *Biju::PDU::UCS2.encode(string))).to eq(string)
     end
   end
 end
