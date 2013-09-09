@@ -2,8 +2,8 @@ module Biju
   module PDU
     class UserData
       ENCODING = {
-        gsm7bit: GSM7Bit,
-        ucs2: UCS2,
+        gsm7bit: Encoding::GSM7Bit,
+        ucs2: Encoding::UCS2,
       }
 
       attr_accessor :encoding, :message, :length

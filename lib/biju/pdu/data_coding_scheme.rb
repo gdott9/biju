@@ -10,8 +10,8 @@ module Biju
 
       def self.autodetect(message)
         message.chars.each do |char|
-          return :ucs2 unless GSM7Bit::BASIC_7BIT_CHARACTER_SET.include?(char) ||
-            GSM7Bit::BASIC_7BIT_CHARACTER_SET_EXTENSION.has_value?(char)
+          return :ucs2 unless Encoding::GSM7Bit::BASIC_7BIT_CHARACTER_SET.include?(char) ||
+            Encoding::GSM7Bit::BASIC_7BIT_CHARACTER_SET_EXTENSION.has_value?(char)
         end
 
         :gsm7bit
@@ -23,7 +23,7 @@ module Biju
           if dcs & 0b11000000 == 0
             dcs = DATA_CODING_SCHEME.key(dcs & 0b00001100)
           else
-            raise "Unsupported"
+            raise 'Unsupported'
           end
         end
 

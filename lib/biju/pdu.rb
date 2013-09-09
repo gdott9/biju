@@ -1,5 +1,5 @@
-require 'biju/pdu/gsm7bit'
-require 'biju/pdu/ucs2'
+require 'biju/pdu/encoding/gsm7bit'
+require 'biju/pdu/encoding/ucs2'
 
 require 'biju/pdu/user_data'
 require 'biju/pdu/data_coding_scheme'
