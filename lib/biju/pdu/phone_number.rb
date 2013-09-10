@@ -4,7 +4,7 @@ module Biju
       attr_accessor :type_of_address, :number
 
       def self.encode(number, type_of_address: :international)
-        number << 'F' if number.length.odd?
+        number = number + 'F' if number.length.odd?
         new(
           number.scan(/../).map(&:reverse).join,
           type_of_address: type_of_address
