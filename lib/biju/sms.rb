@@ -2,8 +2,7 @@ require 'date'
 
 module Biju
   class Sms
-    attr_accessor :id, :phone_number, :type_of_address, :message
-    attr_reader :datetime
+    attr_reader :id, :phone_number, :type_of_address, :message, :datetime
 
     def self.from_pdu(string, id = nil)
       sms_infos = PDU.decode(string)
@@ -14,21 +13,10 @@ module Biju
           message: sms_infos[:user_data].decode)
     end
 
-    def initialize(params={})
+    def initialize(params = {})
       params.each do |attr, value|
-        self.public_send("#{attr}=", value)
+        instance_variable_set(:"@#{attr}", value)
       end if params
-    end
-
-    def datetime=(arg)
-      @datetime = case arg
-      when String
-        DateTime.strptime(arg, "%y/%m/%d,%T%Z")
-      when DateTime
-        arg
-      else
-        nil
-      end
     end
 
     def to_s
