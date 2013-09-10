@@ -17,9 +17,9 @@ module Biju
     # RESPONSE
     rule(:response) { ((status | command) >> crlf) | prompt }
     rule(:prompt) { str('> ').as(:prompt) }
-    rule(:command) { mgl | pms | mgf | mgs | mserror }
+    rule(:command) { mgl | pms | mgf | mgs | merror }
 
-    rule(:mserror) { str('+CMS ERROR').as(:cmd) >> str(': ') >> message }
+    rule(:merror) { (str('+CME ERROR') | str('+CMS ERROR')).as(:cmd) >> str(': ') >> int.as(:result) }
     rule(:mgl) do
       (str('+CMGL').as(:cmd) >> str(': ') >> infos >> crlf >> message >> crlf).repeat.as(:sms) >>
       crlf >> status

@@ -1,3 +1,7 @@
+require 'biju/at/error'
+require 'biju/at/cms_error'
+require 'biju/at/cme_error'
+
 module Biju
   class Hayes
     attr_reader :modem
@@ -96,7 +100,16 @@ module Biju
     private
 
     def hayes_to_obj(str)
-      ATTransform.new.apply(ATParser.new.parse(str))
+      res = ATTransform.new.apply(ATParser.new.parse(str))
+
+      case res[:cmd]
+      when "+CMS ERROR"
+        raise AT::CmsError.new(res[:result])
+      when "+CME ERROR"
+        raise AT::CmeError.new(res[:result])
+      end
+
+      res
     end
   end
 end
