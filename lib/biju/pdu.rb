@@ -4,6 +4,7 @@ require 'biju/pdu/encoding/ucs2'
 require 'biju/pdu/user_data'
 require 'biju/pdu/data_coding_scheme'
 
+require 'biju/pdu/timestamp'
 require 'biju/pdu/phone_number'
 require 'biju/pdu/type_of_address'
 
@@ -38,9 +39,7 @@ module Biju
 
         protocol_identifier: string[34..35],
         data_coding_scheme: string[36..37],
-        timestamp: DateTime.strptime(
-          "#{string[38..49].reverse}+#{string[50..51].reverse}",
-          '%S%M%H%d%m%y%Z'),
+        timestamp: Timestamp.new(string[38, 14]).to_datetime,
         user_data_length: string[52..53],
       }
       res[:sender_number] = PhoneNumber.new(
