@@ -27,10 +27,10 @@ module Biju
       command_args = args.compact.to_hayes
 
       full_command = [command, (command_args.empty? ? nil : command_args)]
-        .compact.join('=')
+        .compact.join('=') + "\r\n"
 
-      modem.write(full_command + "\r\n")
-      answer = hayes_to_obj(modem.wait)
+      modem.write(full_command)
+      answer = hayes_to_obj(modem.wait(length: full_command.length))
 
       return block.call(answer) if block_given?
       answer

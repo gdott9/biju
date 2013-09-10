@@ -21,9 +21,9 @@ module Biju
 
     def_delegators :connection, :close, :write
 
-    def wait
+    def wait(length: 0)
       buffer = ''
-      while IO.select([connection], [], [], 0.25)
+      while IO.select([connection], [], [], 0.50) || buffer.length < length
         buffer << connection.getc.chr
       end
 
