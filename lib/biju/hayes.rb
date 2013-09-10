@@ -76,7 +76,7 @@ module Biju
 
       sms = at_command('+CMGL', which)
 
-      return sms[:status] if !sms.has_key?(:sms) || sms[:sms].empty?
+      return [] unless sms.has_key?(:sms)
       sms[:sms].map do |msg|
         Biju::Sms.from_pdu(msg[:message].chomp, msg[:infos][0])
       end
@@ -103,9 +103,9 @@ module Biju
       res = ATTransform.new.apply(ATParser.new.parse(str))
 
       case res[:cmd]
-      when "+CMS ERROR"
+      when '+CMS ERROR'
         raise AT::CmsError.new(res[:result])
-      when "+CME ERROR"
+      when '+CME ERROR'
         raise AT::CmeError.new(res[:result])
       end
 
