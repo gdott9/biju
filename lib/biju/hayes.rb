@@ -85,10 +85,12 @@ module Biju
     end
 
     def send(sms, options = {})
-      at_command('+CMGS', sms.phone_number)
+      result = at_command('+CMGS', (sms.to_pdu.length - 2) / 2)
 
-      write("#{sms.message}#{26.chr}")
-      hayes_to_obj(modem.wait)
+      if result[:prompt]
+        modem.write("#{sms.to_pdu}#{26.chr}")
+        hayes_to_obj(modem.wait(length: 8).lstrip)
+      end
     end
 
     private

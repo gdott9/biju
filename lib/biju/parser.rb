@@ -8,13 +8,16 @@ module Biju
     rule(:at_string) { request | response }
 
     # REQUEST
-    rule(:request) { str('+++') | str('A/') | (prefix >> (cr.absent? >> lf.absent? >> any).repeat(0)) >> response.maybe }
+    rule(:request) do
+      str('+++') | str('A/') | (prefix >> (cr.absent? >> lf.absent? >> any).repeat(0)) >>
+      (cr >> crlf >> response).maybe
+    end
     rule(:prefix) { str('AT') | str('at') }
 
     # RESPONSE
-    rule(:response) { cr >> crlf >> (((status | command) >> crlf) | prompt)  }
-    rule(:prompt) { str('> ') }
-    rule(:command) { mgl | pms | mgf | mserror }
+    rule(:response) { ((status | command) >> crlf) | prompt }
+    rule(:prompt) { str('> ').as(:prompt) }
+    rule(:command) { mgl | pms | mgf | mgs | mserror }
 
     rule(:mserror) { str('+CMS ERROR').as(:cmd) >> str(': ') >> message }
     rule(:mgl) do
@@ -27,6 +30,9 @@ module Biju
     end
     rule(:mgf) do
       str('+CMGF').as(:cmd) >> str(': ') >> boolean.as(:result) >> crlf >> crlf >> status
+    end
+    rule(:mgs) do
+      str('+CMGS').as(:cmd) >> str(': ') >> int.as(:result) >> crlf >> crlf >> status
     end
 
     rule(:array) do
@@ -64,6 +70,7 @@ module Biju
   end
 
   class ATTransform < Parslet::Transform
+    rule(prompt: simple(:prompt)) { { prompt: true } }
     rule(cmd: simple(:cmd), infos: subtree(:infos), message: simple(:message)) do
       {cmd: cmd.to_s, infos: infos, message: message.to_s}
     end

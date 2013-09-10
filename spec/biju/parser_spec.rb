@@ -18,8 +18,10 @@ describe Biju::ATParser do
     it "parses cmgs prompt" do
       mgs = "AT+CMGS=18\r\r\n> "
 
-      expect { Biju::ATTransform.new.apply(
-        Biju::ATParser.new.parse(mgs)) }.not_to raise_error
+      result = Biju::ATTransform.new.apply(
+        Biju::ATParser.new.parse(mgs))
+
+      expect(result).to include(prompt: true)
     end
 
     it "parses messages list" do
@@ -70,6 +72,16 @@ describe Biju::ATParser do
 
       expect(result).to include(status: true)
       expect(result[:result]).to be_false
+    end
+
+    it "parses message sent response" do
+      mgs = "+CMGS: 163\r\n\r\nOK\r\n"
+
+      result = Biju::ATTransform.new.apply(
+        Biju::ATParser.new.parse(mgs))
+
+      expect(result).to include(status: true)
+      expect(result[:result]).to eq(163)
     end
   end
 
