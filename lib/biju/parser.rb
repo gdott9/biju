@@ -17,7 +17,7 @@ module Biju
     # RESPONSE
     rule(:response) { ((command.maybe >> status) | merror) >> crlf | prompt }
     rule(:prompt) { str('> ').as(:prompt) }
-    rule(:command) { mgl | num | pms | mgf | mgs }
+    rule(:command) { mgl | num | pin | pms | mgf | mgs }
 
     rule(:merror) do
       (str('+CME ERROR') | str('+CMS ERROR')).as(:cmd) >> str(': ') >>
@@ -38,6 +38,9 @@ module Biju
     end
     rule(:mgf) do
       str('+CMGF').as(:cmd) >> str(': ') >> boolean.as(:result) >> crlf >> crlf
+    end
+    rule(:pin) do
+      str('+CPIN').as(:cmd) >> str(': ') >> eol.as(:result) >> crlf >> crlf
     end
     rule(:mgs) do
       str('+CMGS').as(:cmd) >> str(': ') >> int.as(:result) >> crlf >> crlf
@@ -66,6 +69,7 @@ module Biju
     rule(:string) { quote >> match('[^\"]').repeat.as(:string) >> quote }
     rule(:int) { match('[0-9]').repeat(1).as(:int) }
     rule(:boolean) { match('[01]').as(:boolean) }
+    rule(:eol) { (crlf.absent? >> any).repeat.as(:string) }
 
     rule(:datetime) { quote >> (date >> str(',') >> time).as(:datetime) >> quote }
     rule(:date) do

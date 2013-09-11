@@ -93,6 +93,16 @@ describe Biju::ATParser do
       expect(result[:array]).to eq([23, 23, 7, 100, 7, 100])
     end
 
+    it "gets pin status" do
+      pin = "AT+CPIN?\r\r\n+CPIN: READY\r\n\r\nOK\r\n"
+
+      result = Biju::ATTransform.new.apply(
+        Biju::ATParser.new.parse(pin))
+
+      expect(result).to include(status: true)
+      expect(result[:result]).to eq("READY")
+    end
+
     it "parses +CMGF? response" do
       mgf = "AT+CMGF?\r\r\n+CMGF: 0\r\n\r\nOK\r\n"
 

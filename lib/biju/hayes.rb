@@ -79,8 +79,12 @@ module Biju
       nil
     end
 
+    def pin_status
+      at_command('+CPIN?')[:result]
+    end
+
     def unlock_pin(pin)
-      at_command('+CPIN', pin)[:status]
+      at_command('+CPIN', pin)[:status] if pin_status == 'SIM PIN'
     end
 
     def messages(which = :all)
