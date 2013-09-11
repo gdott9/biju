@@ -15,24 +15,32 @@ module Biju
     rule(:prefix) { str('AT') | str('at') }
 
     # RESPONSE
-    rule(:response) { ((status | command) >> crlf) | prompt }
+    rule(:response) { ((command.maybe >> status) | merror) >> crlf | prompt }
     rule(:prompt) { str('> ').as(:prompt) }
-    rule(:command) { mgl | pms | mgf | mgs | merror }
+    rule(:command) { mgl | num | pms | mgf | mgs }
 
-    rule(:merror) { (str('+CME ERROR') | str('+CMS ERROR')).as(:cmd) >> str(': ') >> int.as(:result) }
+    rule(:merror) do
+      (str('+CME ERROR') | str('+CMS ERROR')).as(:cmd) >> str(': ') >>
+        int.as(:result)
+    end
+
     rule(:mgl) do
-      (str('+CMGL').as(:cmd) >> str(': ') >> infos >> crlf >> message >> crlf).repeat.as(:sms) >>
-      crlf >> status
+      (str('+CMGL').as(:cmd) >> str(': ') >> infos >> crlf >> message >> crlf)
+        .repeat.as(:sms) >> crlf
+    end
+    rule(:num) do
+      (str('+CNUM').as(:cmd) >> str(': ') >> array >> crlf)
+        .repeat.as(:phone_numbers) >> crlf >> crlf
     end
     rule(:pms) do
       str('+CPMS').as(:cmd) >> str(': ') >> str('(').maybe >> array >> str(')').maybe >>
-      crlf >> crlf >> status
+      crlf >> crlf
     end
     rule(:mgf) do
-      str('+CMGF').as(:cmd) >> str(': ') >> boolean.as(:result) >> crlf >> crlf >> status
+      str('+CMGF').as(:cmd) >> str(': ') >> boolean.as(:result) >> crlf >> crlf
     end
     rule(:mgs) do
-      str('+CMGS').as(:cmd) >> str(': ') >> int.as(:result) >> crlf >> crlf >> status
+      str('+CMGS').as(:cmd) >> str(': ') >> int.as(:result) >> crlf >> crlf
     end
 
     rule(:array) do

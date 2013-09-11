@@ -48,6 +48,18 @@ module Biju
       at_command('Z')[:status]
     end
 
+    def phone_numbers
+      result = at_command('+CNUM')
+      return [] unless result.has_key?(:phone_numbers)
+
+      result[:phone_numbers].map do |number|
+        {
+          number: number[:array][1].gsub(/[^0-9]/, ''),
+          type_of_address: PDU::TypeOfAddress.new(number[:array][2]).to_sym
+        }
+      end
+    end
+
     def text_mode(enabled = true)
       at_command('+CMGF', enabled)[:status]
     end

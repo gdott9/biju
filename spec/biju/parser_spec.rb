@@ -4,13 +4,31 @@ require 'biju/parser'
 describe Biju::ATParser do
   context "status" do
     it "returns ok status" do
-      result = Biju::ATTransform.new.apply(Biju::ATParser.new.parse("AT\r\r\nOK\r\n"))
+      result = Biju::ATTransform.new.apply(
+        Biju::ATParser.new.parse("AT\r\r\nOK\r\n"))
       expect(result).to include(status: true)
     end
 
     it "returns error status" do
-      result = Biju::ATTransform.new.apply(Biju::ATParser.new.parse("AT\r\r\nERROR\r\n"))
+      result = Biju::ATTransform.new.apply(
+        Biju::ATParser.new.parse("AT\r\r\nERROR\r\n"))
       expect(result).to include(status: false)
+    end
+  end
+
+  context "errors" do
+    it "parses CMS ERROR" do
+      result = Biju::ATTransform.new.apply(
+        Biju::ATParser.new.parse("AT\r\r\n+CMS ERROR: 500\r\n"))
+      expect(result[:cmd]).to eq('+CMS ERROR')
+      expect(result[:result]).to eq(500)
+    end
+
+    it "parses CME ERROR" do
+      result = Biju::ATTransform.new.apply(
+        Biju::ATParser.new.parse("AT\r\r\n+CME ERROR: 100\r\n"))
+      expect(result[:cmd]).to eq('+CME ERROR')
+      expect(result[:result]).to eq(100)
     end
   end
 
@@ -40,6 +58,17 @@ describe Biju::ATParser do
       expect(result).to include(status: true)
       expect(result[:sms]).to have(3).messages
       expect(result[:sms][0][:message]).to eq('07913396050066F3040B91336789')
+    end
+
+    it "gets phone numbers" do
+      pms = "AT+CNUM\r\r\n+CNUM: \"M\",\"+33666666666\",145\r\n\r\n\r\nOK\r\n"
+
+      result = Biju::ATTransform.new.apply(
+        Biju::ATParser.new.parse(pms))
+
+      expect(result[:phone_numbers][0][:cmd]).to eq('+CNUM')
+      expect(result[:phone_numbers]).to have(1).phone_number
+      expect(result[:phone_numbers][0][:array][1]).to eq('+33666666666')
     end
 
     it "gets messages storage" do
