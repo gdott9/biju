@@ -1,5 +1,6 @@
 require 'serialport'
 require 'forwardable'
+require 'timeout'
 
 module Biju
   class Modem
@@ -23,8 +24,10 @@ module Biju
 
     def wait(length: 0)
       buffer = ''
-      while IO.select([connection], [], [], 0.50) || buffer.length < length
-        buffer << connection.getc.chr
+      Timeout.timeout(10) do
+        while IO.select([connection], [], [], 0.50) || buffer.length < length
+          buffer << connection.getc.chr
+        end
       end
 
       buffer
