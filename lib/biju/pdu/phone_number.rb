@@ -21,6 +21,7 @@ module Biju
       end
 
       def length
+        # If the last character is 0xF, remove this one from length
         number.length - (number[-2, 2].hex >> 4 == 15 ? 1 : 0)
       end
     end

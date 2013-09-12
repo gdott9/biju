@@ -35,14 +35,22 @@ module Biju
 
           string.scan(/../).map(&:hex).each_with_index do |octet, i|
             index = i % 7
+            # Only keep the bits for the current character and
+            # add relevant bits from the previous octet
+            # to get the full septet and decode the current character
             current = ((octet & (2 ** (7 - index) - 1)) << index) | next_char
 
             res = add_char(res, current)
             current_length += 1
 
+            # Break when the number of septet is reached
+            # to prevent to add a last @ when there is 7 septets.
+            # The last octet will have one more septet to ignore.
             break if length > 0 && current_length >= length
 
+            # Get the relevant bits for the next character
             next_char = octet >> (7 - index)
+            # When index is 6, next_char contains a full septet
             if index == 6
               res = add_char(res, next_char)
               current_length += 1
@@ -58,6 +66,9 @@ module Biju
           length = 0
 
           string.chars.each do |char|
+            # Look for the current character in basic character set and
+            # extension and concatenate the reversed septets to get
+            # full octets
             if get_septet(char)
               res << get_septet(char).reverse
               length += 1
@@ -67,9 +78,11 @@ module Biju
               length += 2
             end
           end
+          # Add necessary bits to get a full octet
           res << ('0' * (8 - (res.length % 8))) unless res.length % 8 == 0
 
           [
+            # Group by octet, reverse them and print them in hex
             res.scan(/.{8}/).map { |octet| '%02x' % octet.reverse.to_i(2) }.join,
             length: length,
           ]

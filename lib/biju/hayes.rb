@@ -26,6 +26,10 @@ module Biju
       extended_error
     end
 
+    def close
+      modem.close
+    end
+
     def at_command(cmd = nil, *args, &block)
       command = ['AT', cmd].compact.join
       command_args = args.compact.to_hayes
