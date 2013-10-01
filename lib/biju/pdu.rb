@@ -4,6 +4,7 @@ require 'biju/pdu/encoding/ucs2'
 require 'biju/pdu/user_data'
 require 'biju/pdu/data_coding_scheme'
 
+require 'biju/pdu/first_octet'
 require 'biju/pdu/timestamp'
 require 'biju/pdu/phone_number'
 require 'biju/pdu/type_of_address'
@@ -13,15 +14,21 @@ module Biju
     def self.encode(phone_number, message, type_of_address: :international)
       phone_number = PhoneNumber.encode(phone_number)
       user_data = UserData.encode(message)
+      first_octet = FirstOctet.new.message_type_indicator!(:sms_submit)
 
       [
+        # Length of SMSC information
+        # 0 means the SMSC stored in the phone should be used
         '00',
-        '01',
-        '00', # TP-Message-Reference
+        # First octet
+        '%02x' % first_octet.binary,
+        # TP-Message-Reference
+        '00',
         "%02x" % phone_number.length,
         "%02x" % phone_number.type_of_address.hex,
         phone_number.number,
-        '00', # TP-PID: Protocol identifier
+        # TP-PID: Protocol identifier
+        '00',
         "%02x" % user_data.encoding.hex,
         "%02x" % user_data.length,
         user_data.message
