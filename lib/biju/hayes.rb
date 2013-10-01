@@ -19,7 +19,6 @@ module Biju
       @modem = Modem.new(port, options)
 
       attention
-      init_modem
       unlock_pin pin
 
       text_mode(false)
