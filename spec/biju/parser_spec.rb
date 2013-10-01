@@ -33,6 +33,20 @@ describe Biju::ATParser do
   end
 
   context "response" do
+    it "parses generic response" do
+      resp = "AT+COPS\r\r\n+COPS: 1,\"two\",(3,4)\r\n\r\nOK\r\n"
+
+      result = Biju::ATTransform.new.apply(
+        Biju::ATParser.new.parse(resp))
+
+      expect(result[:cmd]).to eq('+COPS')
+      expect(result[:array]).to have(3).fields
+
+      expect(result[:array]).to include(1)
+      expect(result[:array]).to include('two')
+      expect(result[:array]).to include([3,4])
+    end
+
     it "parses cmgs prompt" do
       mgs = "AT+CMGS=18\r\r\n> "
 

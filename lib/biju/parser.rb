@@ -17,7 +17,7 @@ module Biju
     # RESPONSE
     rule(:response) { ((command.maybe >> status) | merror) >> crlf | prompt }
     rule(:prompt) { str('> ').as(:prompt) }
-    rule(:command) { mgl | num | pin | pms | mgf | mgs }
+    rule(:command) { mgl | num | pin | mgf | mgs | generic_response }
 
     rule(:merror) do
       (str('+CME ERROR') | str('+CMS ERROR')).as(:cmd) >> str(': ') >>
@@ -32,10 +32,6 @@ module Biju
       (str('+CNUM').as(:cmd) >> str(': ') >> array >> crlf)
         .repeat.as(:phone_numbers) >> crlf >> crlf
     end
-    rule(:pms) do
-      str('+CPMS').as(:cmd) >> str(': ') >> str('(').maybe >> array >> str(')').maybe >>
-      crlf >> crlf
-    end
     rule(:mgf) do
       str('+CMGF').as(:cmd) >> str(': ') >> boolean.as(:result) >> crlf >> crlf
     end
@@ -44,6 +40,10 @@ module Biju
     end
     rule(:mgs) do
       str('+CMGS').as(:cmd) >> str(': ') >> int.as(:result) >> crlf >> crlf
+    end
+    rule(:generic_response) do
+      match('[^:]').repeat.as(:cmd) >> str(': ') >> array >>
+      crlf >> crlf
     end
 
     rule(:array) do
