@@ -36,27 +36,45 @@ module Biju
     end
 
     def self.decode(string)
-      res = {
-        smsc_length: string[0..1],
-        smsc_type: string[2..3],
-        smsc_number: string[4..15],
+      octets = string.scan(/../)
 
-        address_length: string[18..19].to_i(16),
-        address_type: string[20..21],
+      smsc_length = octets.shift.hex
+      smsc_number = octets.shift(smsc_length)
 
-        protocol_identifier: string[34..35],
-        data_coding_scheme: string[36..37],
-        timestamp: Timestamp.new(string[38, 14]).to_datetime,
-        user_data_length: string[52..53],
+      first_octet = FirstOctet.new(octets.shift.hex)
+
+      address_length = octets.shift.hex
+      address_type = octets.shift.hex
+      sender_number = PhoneNumber.new(
+        octets.shift(
+          (address_length.odd? ? address_length.succ : address_length) / 2).join,
+        type_of_address: address_type)
+
+      protocol_identifier = octets.shift
+      data_coding_scheme = octets.shift
+      timestamp = Timestamp.new(octets.shift(7).join).to_datetime
+      user_data_length = octets.shift.hex
+
+      user_data = UserData.new(message: octets.join,
+        encoding: data_coding_scheme,
+        length: user_data_length)
+
+      {
+        smsc_length: smsc_length,
+        smsc_number: smsc_number,
+
+        first_octet: first_octet,
+
+        address_length: address_length,
+        address_type: address_type,
+        sender_number: sender_number,
+
+        protocol_identifier: protocol_identifier,
+        data_coding_scheme: data_coding_scheme,
+        timestamp: timestamp,
+        user_data_length: user_data_length,
+        user_data: user_data
       }
-      res[:sender_number] = PhoneNumber.new(
-        string[22, res[:address_length] + (res[:address_length].odd? ? 1 : 0)],
-        type_of_address: res[:address_type])
-      res[:user_data] = UserData.new(message: string[54..-1],
-        encoding: res[:data_coding_scheme],
-        length: res[:user_data_length].hex)
-
-      res
     end
   end
 end

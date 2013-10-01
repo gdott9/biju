@@ -9,6 +9,8 @@ module Biju
       }
 
       def initialize(type_of_address, options = {})
+        type_of_address = :international if type_of_address.nil?
+
         unless type_of_address.is_a?(Symbol)
           type_of_address = type_of_address.hex if type_of_address.is_a?(String)
           type_of_address = TYPE_OF_ADDRESS.key(type_of_address)
