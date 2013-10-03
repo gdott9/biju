@@ -24,13 +24,13 @@ module Biju
         '%02x' % first_octet.binary,
         # TP-Message-Reference
         '00',
-        "%02x" % phone_number.length,
-        "%02x" % phone_number.type_of_address.hex,
+        '%02x' % phone_number.length,
+        '%02x' % phone_number.type_of_address.hex,
         phone_number.number,
         # TP-PID: Protocol identifier
         '00',
-        "%02x" % user_data.encoding.hex,
-        "%02x" % user_data.length,
+        '%02x' % user_data.encoding.hex,
+        '%02x' % user_data.length,
         user_data.message
       ].join
     end

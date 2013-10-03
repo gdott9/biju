@@ -38,7 +38,7 @@ module Biju
             # Only keep the bits for the current character and
             # add relevant bits from the previous octet
             # to get the full septet and decode the current character
-            current = ((octet & (2 ** (7 - index) - 1)) << index) | next_char
+            current = ((octet & (2**(7 - index) - 1)) << index) | next_char
 
             res = add_char(res, current)
             current_length += 1

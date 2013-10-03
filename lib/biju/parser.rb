@@ -26,11 +26,11 @@ module Biju
 
     rule(:mgl) do
       (str('+CMGL').as(:cmd) >> str(': ') >> infos >> crlf >> message >> crlf)
-        .repeat.as(:sms) >> crlf
+        .repeat(1).as(:sms) >> crlf
     end
     rule(:num) do
       (str('+CNUM').as(:cmd) >> str(': ') >> array >> crlf)
-        .repeat.as(:phone_numbers) >> crlf >> crlf
+        .repeat(1).as(:phone_numbers) >> crlf >> crlf
     end
     rule(:mgf) do
       str('+CMGF').as(:cmd) >> str(': ') >> boolean.as(:result) >> crlf >> crlf
@@ -42,7 +42,7 @@ module Biju
       str('+CMGS').as(:cmd) >> str(': ') >> int.as(:result) >> crlf >> crlf
     end
     rule(:generic_response) do
-      match('[^:]').repeat.as(:cmd) >> str(': ') >> array >>
+      match('[^:]').repeat(1).as(:cmd) >> str(': ') >> array >>
       crlf >> crlf
     end
 
@@ -52,7 +52,7 @@ module Biju
     rule(:data) { (str('(') >> array >> str(')')) | info }
     rule(:infos) { (info >> (comma >> info).repeat).as(:infos) }
     rule(:info) { datetime | string | int | empty_string }
-    rule(:message) { match('[0-9A-Fa-f]').repeat.as(:message) }
+    rule(:message) { match('[0-9A-Fa-f]').repeat(1).as(:message) }
 
     # MISC
     rule(:status) { (ok | error).as(:status) }
@@ -84,20 +84,22 @@ module Biju
   class ATTransform < Parslet::Transform
     rule(prompt: simple(:prompt)) { { prompt: true } }
     rule(cmd: simple(:cmd), infos: subtree(:infos), message: simple(:message)) do
-      {cmd: cmd.to_s, infos: infos, message: message.to_s}
+      { cmd: cmd.to_s, infos: infos, message: message.to_s }
     end
     rule(cmd: simple(:cmd), array: subtree(:array)) do
-      {cmd: cmd.to_s, array: array}
+      { cmd: cmd.to_s, array: array }
     end
     rule(cmd: simple(:cmd), result: simple(:result)) do
-      {cmd: cmd.to_s, result: result}
+      { cmd: cmd.to_s, result: result }
     end
 
     rule(empty_string: simple(:empty_string)) { '' }
     rule(int: simple(:int)) { int.to_i }
     rule(boolean: simple(:boolean)) { boolean.to_i > 0 }
     rule(string: simple(:string)) { string.to_s }
-    rule(datetime: simple(:datetime)) { DateTime.strptime(datetime.to_s, "%y/%m/%d,%T%Z") }
+    rule(datetime: simple(:datetime)) do
+      DateTime.strptime(datetime.to_s, '%y/%m/%d,%T%Z')
+    end
     rule(array: subtree(:array)) { array }
 
     rule(status: simple(:status)) { { status: status } }
