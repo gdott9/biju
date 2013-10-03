@@ -113,7 +113,12 @@ module Biju
 
       if result[:prompt]
         modem.write("#{sms.to_pdu}#{26.chr}")
-        hayes_to_obj(modem.wait(length: 8).lstrip)
+        res = ''
+        loop do
+          res = modem.wait(length: 8)
+          break unless res.match(/\A[0-9A-Fa-f]+\r\n\z/)
+        end
+        hayes_to_obj(res.lstrip)
       end
     end
 
