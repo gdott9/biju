@@ -105,7 +105,13 @@ module Biju
     # Delete a sms message by id.
     # @param [Fixnum] Id of sms message on modem.
     def delete(id)
-      at_command('+CMGD', id)
+      id = [id] if id.kind_of?(Fixnum)
+      return unless id.kind_of?(Enumerable)
+
+      res = true
+      id.each { |i| res &= at_command('+CMGD', i)[:status] }
+
+      res
     end
 
     def send(sms, options = {})
