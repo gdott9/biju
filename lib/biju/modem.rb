@@ -22,10 +22,14 @@ module Biju
 
     def_delegators :connection, :close, :write
 
-    def wait(length: 0)
+    def flush
+      wait(length: 0, timeout: 0)
+    end
+
+    def wait(length: 0, timeout: 10)
       buffer = ''
-      Timeout.timeout(10) do
-        while IO.select([connection], [], [], 0.50) || buffer.length < length
+      Timeout.timeout(timeout) do
+        while IO.select([connection], [], [], 0.25) || buffer.length < length
           buffer << connection.getc.chr
         end
       end

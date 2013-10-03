@@ -36,6 +36,7 @@ module Biju
       full_command = [command, (command_args.empty? ? nil : command_args)]
         .compact.join('=') + "\r\n"
 
+      modem.flush
       modem.write(full_command)
       answer = hayes_to_obj(modem.wait(length: full_command.length))
 
