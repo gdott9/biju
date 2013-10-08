@@ -41,6 +41,7 @@ modem.close
 1. Write missing test for modem module.
 2. Write a documentation.
 3. Test with different kinds of modem and OS.
+4. Handle UDH (User Data Header) and SMS longer than 140 octets
 
 ## Contributing
 
