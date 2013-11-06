@@ -26,7 +26,10 @@ module Biju
       wait(length: 0, timeout: 0)
     end
 
-    def wait(length: 0, timeout: 10)
+    def wait(options = {})
+      length = options[:length] || 0
+      timeout = options[:timeout] || 10
+
       buffer = ''
       Timeout.timeout(timeout) do
         while IO.select([connection], [], [], 0.25) || buffer.length < length

@@ -2,7 +2,9 @@ module Biju
   module PDU
     module Encoding
       class UCS2
-        def self.decode(string, length: 0)
+        def self.decode(string, options = {})
+          length = options[:length] || 0
+
           string.scan(/.{4}/).map { |char| char.hex.chr('UCS-2BE') }.join
           .encode('UTF-8', 'UCS-2BE')
         end

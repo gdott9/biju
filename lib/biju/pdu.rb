@@ -11,7 +11,9 @@ require 'biju/pdu/type_of_address'
 
 module Biju
   module PDU
-    def self.encode(phone_number, message, type_of_address: :international)
+    def self.encode(phone_number, message, options = {})
+      type_of_address = options[:type_of_address] || :international
+
       phone_number = PhoneNumber.encode(phone_number)
       user_data = UserData.encode(message)
       first_octet = FirstOctet.new.message_type_indicator!(:sms_submit)

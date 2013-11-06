@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 module Biju
   module PDU
     module Encoding
@@ -28,7 +30,9 @@ module Biju
           0x65 => '€',
         }
 
-        def self.decode(string, length: 0)
+        def self.decode(string, options = {})
+          length = options[:length] || 0
+
           res = ''
           next_char = 0
           current_length = 0
@@ -98,7 +102,9 @@ module Biju
           end
         end
 
-        def self.get_septet(char, escape: false)
+        def self.get_septet(char, options = {})
+          escape = options[:escape] || false
+
           char = (!escape ? BASIC_7BIT_CHARACTER_SET.index(char) : BASIC_7BIT_CHARACTER_SET_EXTENSION.key(char))
 
           return nil unless char

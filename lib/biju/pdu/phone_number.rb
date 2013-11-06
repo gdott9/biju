@@ -3,7 +3,9 @@ module Biju
     class PhoneNumber
       attr_accessor :type_of_address, :number
 
-      def self.encode(number, type_of_address: :international)
+      def self.encode(number, options = {})
+        type_of_address = options[:type_of_address] || :international
+
         number = number + 'F' if number.length.odd?
         new(
           number.scan(/../).map(&:reverse).join,
@@ -11,7 +13,9 @@ module Biju
         )
       end
 
-      def initialize(number, type_of_address: :international)
+      def initialize(number, options = {})
+        type_of_address = options[:type_of_address] || :international
+
         self.number = number
         self.type_of_address = TypeOfAddress.new(type_of_address)
       end
