@@ -6,9 +6,10 @@ module Biju
 
       class MalformedSms < PDUError
         attr_reader :original_exception
-        attr_reader :pdu
+        attr_reader :pdu, :id
 
-        def initialize(pdu, original_exception = nil)
+        def initialize(pdu, id, original_exception = nil)
+          @id = id
           @pdu = pdu
           @original_exception = original_exception
         end

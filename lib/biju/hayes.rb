@@ -105,7 +105,7 @@ module Biju
         begin
           Biju::Sms.from_pdu(msg[:message].chomp, msg[:infos][0])
         rescue Biju::PDU::Errors::PDUError => e
-          malformed = Biju::PDU::Errors::MalformedSms.new(msg[:message].chomp, e)
+          malformed = Biju::PDU::Errors::MalformedSms.new(msg[:message].chomp, msg[:infos][0], e)
           if exceptions
             raise malformed
           else
