@@ -91,14 +91,27 @@ module Biju
       at_command('+CPIN', pin)[:status] if pin_status == 'SIM PIN'
     end
 
-    def messages(which = :all)
+    def messages!(which = :all)
+      messages(which, true)
+    end
+
+    def messages(which = :all, exceptions = false)
       which = MESSAGE_STATUS[which][text_mode? ? 1 : 0] if which.is_a?(Symbol)
 
       sms = at_command('+CMGL', which)
 
       return [] unless sms.has_key?(:sms)
       sms[:sms].map do |msg|
-        Biju::Sms.from_pdu(msg[:message].chomp, msg[:infos][0])
+        begin
+          Biju::Sms.from_pdu(msg[:message].chomp, msg[:infos][0])
+        rescue Biju::PDU::Errors::PDUError => e
+          malformed = Biju::PDU::Errors::MalformedSms.new(msg[:message].chomp, e)
+          if exceptions
+            raise malformed
+          else
+            malformed
+          end
+        end
       end
     end
 
