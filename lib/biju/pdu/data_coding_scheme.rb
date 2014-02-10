@@ -23,7 +23,7 @@ module Biju
           if dcs & 0b11000000 == 0
             dcs = DATA_CODING_SCHEME.key(dcs & 0b00001100)
           else
-            raise 'Unsupported'
+            raise Biju::PDU::Errors::DataCodingSchemeNotSupported.new(dcs)
           end
         end
 

@@ -9,6 +9,8 @@ require 'biju/pdu/timestamp'
 require 'biju/pdu/phone_number'
 require 'biju/pdu/type_of_address'
 
+require 'biju/pdu/errors'
+
 module Biju
   module PDU
     def self.encode(phone_number, message, options = {})
