@@ -50,3 +50,34 @@ modem.close
 3. Commit your changes (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+## Resources
+
+http://en.wikipedia.org/wiki/GSM_03.40
+http://www.etsi.org/deliver/etsi_gts/04/0408/05.00.00_60/gsmts_0408v050000p.pdf
+http://www.etsi.org/deliver/etsi_ts/101000_101099/101032/05.01.00_60/ts_101032v050100p.pdf
+http://en.wikipedia.org/wiki/Short_message_service_center
+http://en.wikipedia.org/wiki/AT_command
+http://subnets.ru/saved/sms_pdu_format.html
+http://jazi.staff.ugm.ac.id/Mobile%20and%20Wireless%20Documents/SMS_PDU-mode.PDF
+http://www.sendsms.cn/download/SMS_PDU-mode.PDF
+http://www.sendsms.cn/download/wavecom/PDU%B6%CC%D0%C5%CF%A2/SMS_PDU-mode.PDF
+http://www.gsm-modem.de/sms-pdu-mode.html
+http://www.developershome.com/sms/cmgrCommand3.asp
+http://www.developershome.com/sms/cmgsCommand4.asp
+http://en.wikipedia.org/wiki/Concatenated_SMS
+
+# Encoding
+http://en.wikipedia.org/wiki/GSM_03.38
+http://www.3gpp.org/ftp/Specs/html-info/0338.htm
+http://www.codeproject.com/Tips/470755/Encoding-Decoding-7-bit-User-Data-for-SMS-PDU-PDU
+https://github.com/bitcoder/ruby_ucp/wiki/SMS-Alphabets
+
+# AT Commands
+http://en.wikipedia.org/wiki/Hayes_command_set
+https://www.sparkfun.com/datasheets/Cellular%20Modules/ADH8066-AT-Commands-v1.6.pdf
+http://www.coster.eu/costerit/teleges/doc/gsm822w.pdf
+http://www.developershome.com/sms/cmglCommand.asp
+http://www.zoomtel.com/documentation/dial_up/100498D.pdf
+
+AT+CLAC > list supported commands
